@@ -48,65 +48,39 @@
 
   <!-- Remaining Balance -->
   <div id="balance-card">
-    <div class="label">Remaining balance this month</div>
+    <div class="label">Last remaining balance</div>
     <div id="balance" class="amount">Loading…</div>
   </div>
 
   <!-- Google Form -->
   <iframe
-    id="formFrame"
     src="https://docs.google.com/forms/d/e/1FAIpQLScFqQY2sZU9C17ZsZ81EtCFJy07B3qbCv5fGn3Ydlf5iJaKXg/viewform"
     allowfullscreen>
   </iframe>
 
-  <!-- Balance logic -->
+  <!-- Fetch balance -->
   <script>
     const BALANCE_API_URL =
       "https://script.google.com/macros/s/AKfycbxGjmY7Cj8iqWdavWjTURKqs58USNzRyugU3EzKvl9OiElAJesRMHSWzOuCDi1nUYqD/exec";
 
-    const balanceEl = document.getElementById("balance");
-    const iframe = document.getElementById("formFrame");
-
-    function fetchBalance() {
-      fetch(BALANCE_API_URL)
-        .then(res => res.json())
-        .then(data => {
-          const amount = Math.round(data.remaining);
-          balanceEl.textContent =
-            "₹" + amount.toLocaleString("en-IN");
-        })
-        .catch(() => {
-          balanceEl.textContent = "Balance unavailable";
-        });
-    }
-
-    // Initial load
-    fetchBalance();
-
-    // Detect Google Form submission via iframe URL change
-    let lastUrl = "";
-
-    setInterval(() => {
-      try {
-        const currentUrl = iframe.contentWindow.location.href;
-
-        if (
-          currentUrl !== lastUrl &&
-          (currentUrl.includes("formResponse") ||
-           currentUrl.includes("closedform"))
-        ) {
-          // Give Google Sheets time to update
-          setTimeout(fetchBalance, 1500);
-        }
-
-        lastUrl = currentUrl;
-      } catch (e) {
-        // Cross-origin access may fail — expected, ignore
-      }
-    }, 1000);
+    fetch(BALANCE_API_URL)
+      .then(response => response.json())
+      .then(data => {
+        const remaining = Math.round(data.remaining);
+        const available = Math.round(data.available);
+        document.getElementById("balance").textContent =
+          "₹" +
+          remaining.toLocaleString("en-IN") +
+          " / ₹" +
+          available.toLocaleString("en-IN");
+      })
+      .catch(() => {
+        document.getElementById("balance").textContent =
+          "Balance unavailable";
+      });
   </script>
 
-  <!-- Service Worker -->
+  <!-- Service worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
