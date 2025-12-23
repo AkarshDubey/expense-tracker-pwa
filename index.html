@@ -7,34 +7,81 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#1a73e8" />
+  <meta name="theme-color" content="#0f172a" />
 
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      background: #f8fafc;
+    }
+
+    #balance-card {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 16px;
+      text-align: center;
+    }
+
+    #balance-card .label {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    #balance-card .amount {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px;
     }
 
     iframe {
       border: none;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 88px);
     }
   </style>
 </head>
 
 <body>
+
+  <!-- Remaining Balance -->
+  <div id="balance-card">
+    <div class="label">Remaining balance this month</div>
+    <div id="balance" class="amount">Loading…</div>
+  </div>
+
+  <!-- Google Form -->
   <iframe
     src="https://docs.google.com/forms/d/e/1FAIpQLScFqQY2sZU9C17ZsZ81EtCFJy07B3qbCv5fGn3Ydlf5iJaKXg/viewform"
     allowfullscreen>
   </iframe>
 
+  <!-- Fetch balance -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+    const BALANCE_API_URL =
+      "https://script.google.com/macros/s/AKfycbxGjmY7Cj8iqWdavWjTURKqs58USNzRyugU3EzKvl9OiElAJesRMHSWzOuCDi1nUYqD/exec";
+
+    fetch(BALANCE_API_URL)
+      .then(response => response.json())
+      .then(data => {
+        const amount = Math.round(data.remaining);
+        document.getElementById("balance").textContent =
+          "₹" + amount.toLocaleString("en-IN");
+      })
+      .catch(() => {
+        document.getElementById("balance").textContent =
+          "Balance unavailable";
+      });
+  </script>
+
+  <!-- Service worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
     }
   </script>
+
 </body>
 </html>
-
